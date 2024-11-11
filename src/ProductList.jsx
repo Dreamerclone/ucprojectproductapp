@@ -1,8 +1,14 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Box } from '@mui/material';
+import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, TextField } from '@mui/material';
+import { styled } from '@mui/system';
 
-function ProductList() {
+const FormContainer = styled(Paper)`
+  padding: 20px;
+  margin-top: 20px;
+`;
+
+const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(null);
   const [editProduct, setEditProduct] = useState({
@@ -67,7 +73,7 @@ function ProductList() {
   };
 
   return (
-    <Container>
+    <Box>
       <Typography variant="h4" gutterBottom>
         Product List
       </Typography>
@@ -114,7 +120,7 @@ function ProductList() {
       </TableContainer>
 
       {isEditing && (
-        <Box mt={4}>
+        <FormContainer>
           <Typography variant="h5" gutterBottom>
             Edit Product
           </Typography>
@@ -179,10 +185,10 @@ function ProductList() {
               </Button>
             </Box>
           </Box>
-        </Box>
+        </FormContainer>
       )}
-    </Container>
+    </Box>
   );
-}
+};
 
 export default ProductList;

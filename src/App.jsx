@@ -1,12 +1,14 @@
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
-import { useState } from "react";
-import { AppBar, Toolbar, Typography, Button, Container, CssBaseline } from "@mui/material";
-import styled from '@emotion/styled';
-import AddProduct from "./AddProduct";
-import ProductList from "./ProductList";
-import Profile from "./Profile";
-import Login from "./Login";
-import Register from "./Register";
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline, AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
+import { styled } from '@mui/system';
+import AddProduct from './AddProduct';
+import ProductList from './ProductList';
+import Profile from './Profile';
+import Login from './Login';
+import Register from './Register';
+import UserList from './UserList';
+import theme from './theme';
 
 const NavLink = styled(Link)`
   margin-right: 20px;
@@ -14,8 +16,21 @@ const NavLink = styled(Link)`
   text-decoration: none;
 `;
 
-const AppContainer = styled(Container)`
-  margin-top: 20px;
+const MainContainer = styled(Container)`
+  width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
+const AppContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+`;
+
+const Content = styled(Box)`
+  flex: 1;
+  padding: 20px;
 `;
 
 function App() {
@@ -27,50 +42,60 @@ function App() {
   };
 
   return (
-    <Router>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            CREATED BY JOSHUA JADE EROJO
-          </Typography>
-          <Button color="inherit" component={NavLink} to="/">
-            Add Product
-          </Button>
-          <Button color="inherit" component={NavLink} to="/products">
-            Product List
-          </Button>
-          {isAuthenticated ? (
-            <>
-              <Button color="inherit" component={NavLink} to="/profile">
-                Profile
+      <Router>
+        <AppContainer>
+          <AppBar position="static">
+            <Toolbar>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Inventory System
+              </Typography>
+              <Button color="inherit" component={NavLink} to="/">
+                Add Product
               </Button>
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
+              <Button color="inherit" component={NavLink} to="/products">
+                Product List
               </Button>
-            </>
-          ) : (
-            <>
-              <Button color="inherit" component={NavLink} to="/login">
-                Login
-              </Button>
-              <Button color="inherit" component={NavLink} to="/register">
-                Register
-              </Button>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
-      <AppContainer>
-        <Routes>
-          <Route path="/" element={<AddProduct />} />
-          <Route path="/products" element={<ProductList />} />
-          <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-        </Routes>
-      </AppContainer>
-    </Router>
+              {isAuthenticated ? (
+                <>
+                  <Button color="inherit" component={NavLink} to="/profile">
+                    Profile
+                  </Button>
+                  <Button color="inherit" component={NavLink} to="/users">
+                    User List
+                  </Button>
+                  <Button color="inherit" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button color="inherit" component={NavLink} to="/login">
+                    Login
+                  </Button>
+                  <Button color="inherit" component={NavLink} to="/register">
+                    Register
+                  </Button>
+                </>
+              )}
+            </Toolbar>
+          </AppBar>
+          <Content>
+            <MainContainer>
+              <Routes>
+                <Route path="/" element={<AddProduct />} />
+                <Route path="/products" element={<ProductList />} />
+                <Route path="/login" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+                <Route path="/users" element={isAuthenticated ? <UserList /> : <Navigate to="/login" />} />
+              </Routes>
+            </MainContainer>
+          </Content>
+        </AppContainer>
+      </Router>
+    </ThemeProvider>
   );
 }
 

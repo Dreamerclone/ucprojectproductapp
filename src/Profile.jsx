@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box, Avatar } from '@mui/material';
+import { TextField, Button, Typography, Box, Avatar, Paper } from '@mui/material';
+import { styled } from '@mui/system';
+
+const FormContainer = styled(Paper)`
+  padding: 20px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -62,12 +71,12 @@ const Profile = () => {
   };
 
   return (
-    <Container>
+    <Box>
       <Typography variant="h4" gutterBottom>
         Profile
       </Typography>
-      <Box component="form" noValidate autoComplete="off">
-        {profile.profileImage && <Avatar src={`http://localhost:3000/${profile.profileImage}`} sx={{ width: 56, height: 56 }} />}
+      <FormContainer>
+        {profile.profileImage && <Avatar src={`http://localhost:3000/${profile.profileImage}`} sx={{ width: 100, height: 100 }} />}
         <TextField
           label="Username"
           name="username"
@@ -89,14 +98,15 @@ const Profile = () => {
           accept="image/*"
           type="file"
           onChange={handleFileChange}
+          style={{ margin: '20px 0' }}
         />
         <Box mt={2}>
           <Button variant="contained" color="primary" onClick={handleSave}>
             Save
           </Button>
         </Box>
-      </Box>
-    </Container>
+      </FormContainer>
+    </Box>
   );
 };
 

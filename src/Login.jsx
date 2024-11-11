@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Typography, Box, Paper } from '@mui/material';
+import { styled } from '@mui/system';
+
+const FormContainer = styled(Paper)`
+  padding: 20px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -22,35 +31,37 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <Container>
+    <Box>
       <Typography variant="h4" gutterBottom>
         Login
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
-        <TextField
-          label="Username"
-          name="username"
-          value={credentials.username}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          name="password"
-          type="password"
-          value={credentials.password}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <Box mt={2}>
-          <Button type="submit" variant="contained" color="primary">
-            Login
-          </Button>
+      <FormContainer>
+        <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off">
+          <TextField
+            label="Username"
+            name="username"
+            value={credentials.username}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={credentials.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <Box mt={2}>
+            <Button type="submit" variant="contained" color="primary">
+              Login
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Container>
+      </FormContainer>
+    </Box>
   );
 };
 
