@@ -174,6 +174,19 @@ app.delete('/products/:id', async (req, res) => {
   res.json({ message: 'Product deleted!' });
 });
 
+
+// Get all users route
+app.get('/users', authMiddleware, async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
