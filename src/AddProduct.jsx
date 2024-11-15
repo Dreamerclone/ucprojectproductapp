@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from './axiosConfig';
 import { TextField, Button, Typography, Box, Paper } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -17,23 +17,43 @@ const AddProduct = () => {
     quantity: '',
     dateAdded: ''
   });
+  const [file, setFile] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProduct({ ...product, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
   const handleSave = async () => {
     try {
-      await axios.post('http://localhost:3000/products', {
-        product_code: product.productCode,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        qty: product.quantity,
-        date_added: product.dateAdded,
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Unauthorized. Please log in.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('product_code', product.productCode);
+      formData.append('name', product.name);
+      formData.append('description', product.description);
+      formData.append('price', product.price);
+      formData.append('qty', product.quantity);
+      formData.append('date_added', product.dateAdded);
+      if (file) {
+        formData.append('image', file);
+      }
+
+      await axios.post('http://localhost:3000/products', formData, {
+        headers: {
+          'x-auth-token': token,
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      alert('Product saved successfully!');
+      alert('Product added successfully!');
       setProduct({
         productCode: '',
         name: '',
@@ -42,9 +62,14 @@ const AddProduct = () => {
         quantity: '',
         dateAdded: ''
       });
+      setFile(null);
     } catch (error) {
-      console.error('Error saving product:', error);
-      alert('Failed to save product');
+      if (error.response && error.response.status === 401) {
+        alert('Unauthorized. Please log in again.');
+      } else {
+        console.error('Error adding product:', error);
+        alert('Failed to add product');
+      }
     }
   };
 
@@ -57,6 +82,7 @@ const AddProduct = () => {
       quantity: '',
       dateAdded: ''
     });
+    setFile(null);
   };
 
   return (
@@ -119,6 +145,12 @@ const AddProduct = () => {
             InputLabelProps={{
               shrink: true,
             }}
+          />
+          <input
+            accept="image/*"
+            type="file"
+            onChange={handleFileChange}
+            style={{ margin: '20px 0' }}
           />
           <Box mt={2}>
             <Button variant="contained" color="primary" onClick={handleSave}>

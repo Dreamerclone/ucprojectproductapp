@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Avatar, Box } from '@mui/material';
+import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Avatar, Box, Button } from '@mui/material';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -23,6 +23,20 @@ const UserList = () => {
     fetchUsers();
   }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:3000/users/${id}`, {
+        headers: {
+          'x-auth-token': token
+        }
+      });
+      setUsers(users.filter((user) => user._id !== id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -34,12 +48,14 @@ const UserList = () => {
             <TableRow>
               <TableCell>Profile Image</TableCell>
               <TableCell>Username</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan="2">No users found</TableCell>
+                <TableCell colSpan="4">No users found</TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
@@ -52,6 +68,12 @@ const UserList = () => {
                     )}
                   </TableCell>
                   <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Button variant="contained" color="secondary" onClick={() => handleDelete(user._id)}>
+                      Delete
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}

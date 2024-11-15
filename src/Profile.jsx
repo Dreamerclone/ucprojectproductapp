@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { TextField, Button, Typography, Box, Avatar, Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import axios from './axiosConfig'; // Use centralized Axios config
+import { TextField, Button, Container, Typography, Box, Avatar, Paper } from '@mui/material';
 import { styled } from '@mui/system';
 
 const FormContainer = styled(Paper)`
@@ -22,15 +22,19 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/profile', {
-          headers: {
-            'x-auth-token': token
-          }
-        });
+        const response = await axios.get('/profile'); // Token should be automatically included
         setProfile({ username: response.data.username, profileImage: response.data.profileImage, password: '' });
       } catch (error) {
         console.error('Error fetching profile:', error);
+        if (error.response && error.response.status === 401) {
+          alert('Unauthorized access. Please log in again.');
+          window.location.href = '/login';
+        } else if (error.response && error.response.status === 404) {
+          alert('Profile not found. Please log in again.');
+          window.location.href = '/login';
+        } else {
+          alert('Failed to load profile data.');
+        }
       }
     };
     fetchProfile();
@@ -49,7 +53,6 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('username', profile.username);
       formData.append('password', profile.password);
@@ -57,9 +60,8 @@ const Profile = () => {
         formData.append('profileImage', file);
       }
 
-      await axios.put('http://localhost:3000/profile', formData, {
+      await axios.put('/profile', formData, {
         headers: {
-          'x-auth-token': token,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -71,7 +73,7 @@ const Profile = () => {
   };
 
   return (
-    <Box>
+    <Container>
       <Typography variant="h4" gutterBottom>
         Profile
       </Typography>
@@ -106,7 +108,7 @@ const Profile = () => {
           </Button>
         </Box>
       </FormContainer>
-    </Box>
+    </Container>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { TextField, Button, Typography, Box, Paper } from '@mui/material';
+import axios from './axiosConfig'; // Use centralized Axios config
+import { TextField, Button, Container, Typography, Box, Paper } from '@mui/material';
 import { styled } from '@mui/system';
 
 const FormContainer = styled(Paper)`
@@ -21,17 +21,22 @@ const Login = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:3000/login', credentials);
-      localStorage.setItem('token', response.data.token);
-      onLogin();
+      const response = await axios.post('/login', credentials);
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        onLogin(); // Update authentication state
+        window.location.href = "/products"; // Redirect after successful login
+      } else {
+        alert('Login failed: No token received');
+      }
     } catch (error) {
       console.error('Error logging in:', error);
-      alert('Login failed');
+      alert('Login failed: Invalid credentials');
     }
   };
 
   return (
-    <Box>
+    <Container>
       <Typography variant="h4" gutterBottom>
         Login
       </Typography>
@@ -61,7 +66,7 @@ const Login = ({ onLogin }) => {
           </Box>
         </Box>
       </FormContainer>
-    </Box>
+    </Container>
   );
 };
 

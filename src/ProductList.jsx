@@ -1,29 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, TextField } from '@mui/material';
+import axios from './axiosConfig';
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material';
 import { styled } from '@mui/system';
 
 const FormContainer = styled(Paper)`
   padding: 20px;
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
-const ProductList = () => {
+const ProductList = ({ role }) => {
   const [products, setProducts] = useState([]);
-  const [isEditing, setIsEditing] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [editProduct, setEditProduct] = useState({
     productCode: '',
     name: '',
     description: '',
     price: '',
     quantity: '',
-    dateAdded: ''
+    dateAdded: '',
+    file: null,
   });
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/products');
+        const response = await axios.get('/products');
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -33,15 +49,6 @@ const ProductList = () => {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3000/products/${id}`);
-      setProducts(products.filter((product) => product._id !== id));
-    } catch (error) {
-      console.error('Error deleting product:', error);
-    }
-  };
-
   const handleEdit = (product) => {
     setIsEditing(product._id);
     setEditProduct({
@@ -50,25 +57,74 @@ const ProductList = () => {
       description: product.description,
       price: product.price,
       quantity: product.qty,
-      dateAdded: product.date_added
+      dateAdded: product.date_added,
+      file: null,
     });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditProduct({ ...editProduct, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    setEditProduct({ ...editProduct, file: e.target.files[0] });
   };
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`http://localhost:3000/products/${isEditing}`, {
-        product_code: editProduct.productCode,
-        name: editProduct.name,
-        description: editProduct.description,
-        price: editProduct.price,
-        qty: editProduct.quantity,
-        date_added: editProduct.dateAdded,
+      const formData = new FormData();
+      formData.append('product_code', editProduct.productCode);
+      formData.append('name', editProduct.name);
+      formData.append('description', editProduct.description);
+      formData.append('price', editProduct.price);
+      formData.append('qty', editProduct.quantity);
+      formData.append('date_added', editProduct.dateAdded);
+      if (editProduct.file) {
+        formData.append('image', editProduct.file);
+      }
+
+      await axios.put(`/products/${isEditing}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-      setIsEditing(null);
-      const updatedProducts = await axios.get('http://localhost:3000/products');
+      setIsEditing(false);
+      const updatedProducts = await axios.get('/products');
       setProducts(updatedProducts.data);
     } catch (error) {
       console.error('Error updating product:', error);
+      alert('Failed to update product');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/products/${id}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      setProducts(products.filter((product) => product._id !== id));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
+  };
+
+  const handleBuy = async (id) => {
+    try {
+      await axios.post(`/buy/${id}`, {}, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      alert('Successfully bought the product!');
+      const updatedProducts = await axios.get('/products');
+      setProducts(updatedProducts.data);
+    } catch (error) {
+      console.error('Error buying product:', error);
+      alert('Failed to buy product');
     }
   };
 
@@ -81,12 +137,12 @@ const ProductList = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Image</TableCell>
               <TableCell>Product Code</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Quantity</TableCell>
-              <TableCell>Date Added</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -98,19 +154,44 @@ const ProductList = () => {
             ) : (
               products.map((product) => (
                 <TableRow key={product._id}>
+                  <TableCell>
+                    {product.image && (
+                      <img src={`http://localhost:3000/${product.image}`} alt={product.name} width="100" />
+                    )}
+                  </TableCell>
                   <TableCell>{product.product_code}</TableCell>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.price}</TableCell>
+                  <TableCell>₱{product.price}</TableCell>
                   <TableCell>{product.qty}</TableCell>
-                  <TableCell>{new Date(product.date_added).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <Button variant="contained" color="primary" onClick={() => handleEdit(product)}>
-                      Edit
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={() => handleDelete(product._id)} style={{ marginLeft: '10px' }}>
-                      Delete
-                    </Button>
+                    {role === 'admin' ? (
+                      <>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleEdit(product)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => handleDelete(product._id)}
+                          style={{ marginLeft: '10px' }}
+                        >
+                          Delete
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleBuy(product._id)}
+                      >
+                        Buy
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -129,7 +210,7 @@ const ProductList = () => {
               label="Product Code"
               name="productCode"
               value={editProduct.productCode}
-              onChange={(e) => setEditProduct({ ...editProduct, productCode: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             />
@@ -137,7 +218,7 @@ const ProductList = () => {
               label="Name"
               name="name"
               value={editProduct.name}
-              onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             />
@@ -145,7 +226,7 @@ const ProductList = () => {
               label="Description"
               name="description"
               value={editProduct.description}
-              onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             />
@@ -154,7 +235,7 @@ const ProductList = () => {
               name="price"
               type="number"
               value={editProduct.price}
-              onChange={(e) => setEditProduct({ ...editProduct, price: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             />
@@ -163,7 +244,7 @@ const ProductList = () => {
               name="quantity"
               type="number"
               value={editProduct.quantity}
-              onChange={(e) => setEditProduct({ ...editProduct, quantity: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
             />
@@ -172,12 +253,18 @@ const ProductList = () => {
               name="dateAdded"
               type="date"
               value={editProduct.dateAdded}
-              onChange={(e) => setEditProduct({ ...editProduct, dateAdded: e.target.value })}
+              onChange={handleInputChange}
               fullWidth
               margin="normal"
               InputLabelProps={{
                 shrink: true,
               }}
+            />
+            <input
+              accept="image/*"
+              type="file"
+              onChange={handleFileChange}
+              style={{ margin: '20px 0' }}
             />
             <Box mt={2}>
               <Button variant="contained" color="primary" onClick={handleUpdate}>

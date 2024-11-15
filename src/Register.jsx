@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Typography, Box, Paper } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Paper } from '@mui/material';
 import { styled } from '@mui/system';
 
 const FormContainer = styled(Paper)`
@@ -12,7 +12,7 @@ const FormContainer = styled(Paper)`
 `;
 
 const Register = () => {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ username: '', password: '', role: 'user' });
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -31,7 +31,7 @@ const Register = () => {
   };
 
   return (
-    <Box>
+    <Container>
       <Typography variant="h4" gutterBottom>
         Register
       </Typography>
@@ -54,6 +54,14 @@ const Register = () => {
             fullWidth
             margin="normal"
           />
+          <TextField
+            label="Role"
+            name="role"
+            value={credentials.role}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
           <Box mt={2}>
             <Button type="submit" variant="contained" color="primary">
               Register
@@ -61,7 +69,7 @@ const Register = () => {
           </Box>
         </Box>
       </FormContainer>
-    </Box>
+    </Container>
   );
 };
 
